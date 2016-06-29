@@ -1,0 +1,24 @@
+{
+  "name": "ctgbg",
+  "description": "",
+  "scripts": {
+  },
+  "env": {
+    "HOST": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+    "graphenedb"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
