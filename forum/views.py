@@ -1,10 +1,11 @@
 from .models import User, get_todays_recent_posts
-from flask import Flask, request, session, redirect, url_for, render_template, flash, abort
-
-app = Flask(__name__)
+from flask import request, session, redirect, url_for, render_template, flash, abort
+from forum import app
+from os import environ
 
 @app.route('/')
 def index():
+    app.logger.info('Index')
     posts = get_todays_recent_posts()
     return render_template('index.html', posts=posts)
 
@@ -105,7 +106,29 @@ def profile(username):
         common=common
     )
 
-    @app.before_request()
-    def limit_remote_addr():
-        if request.remote_addr != '79.136.64.20':
-            abort(403)
+@app.before_request
+def limit_remote_addr():
+    try:
+        ips = environ['ALLOWED_IPS']
+    except KeyError:
+        return None
+
+    if 'HTTP_X_FORWARDED_FOR' in request.META:
+        ip_adds = request.META['HTTP_X_FORWARDED_FOR'].split(",")
+        ip = ip_adds[0]
+    else:
+        ip = request.META['REMOTE_ADDR']
+        app.logger.info(ip)
+
+    parts = ips.split(",")
+
+    for aip in parts:
+        try:
+            ip_to_check = ipaddress.ip_network(unicode(aip))
+        except ValueError:
+            ip_to_check = ipaddress.ip_address(unicode(aip))
+
+        if ipaddress.ip_address(unicode(ip)) in ip_to_check:
+            return None
+    abort(403)
+
