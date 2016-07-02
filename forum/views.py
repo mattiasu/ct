@@ -1,5 +1,5 @@
 from .models import User, get_todays_recent_posts
-from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask import Flask, request, session, redirect, url_for, render_template, flash, abort
 
 app = Flask(__name__)
 
@@ -104,3 +104,8 @@ def profile(username):
         similar=similar,
         common=common
     )
+
+    @app.before_request()
+    def limit_remote_addr():
+        if request.remote_addr != '79.136.64.20':
+            abort(403)
