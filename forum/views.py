@@ -113,11 +113,12 @@ def limit_remote_addr():
     except KeyError:
         return None
 
-    ips = request.headers.getlist('HTTP_X_FORWARDED_FOR')
-    if not ips:
+    provided_ips = request.access_route
+    if not provided_ips:
         app.logger.info('No ip')
     else:
         parts = allowed_ips.split(',')
+        ip = provided_ips[0]
 
         for aip in parts:
             try:
@@ -127,5 +128,5 @@ def limit_remote_addr():
 
             if ipaddress.ip_address(unicode(ip)) in ip_to_check:
                 return None
-        abort(403)
+    abort(403)
 
