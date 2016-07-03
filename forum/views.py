@@ -2,7 +2,6 @@ from .models import User, get_todays_recent_posts
 from flask import request, session, redirect, url_for, render_template, flash, abort
 from forum import app
 from os import environ
-import ipaddress
 
 @app.route('/')
 def index():
@@ -117,18 +116,15 @@ def limit_remote_addr():
     provided_ips = request.access_route
     if not provided_ips:
         app.logger.info('No ip')
+        abort(500)
     else:
         parts = allowed_ips.split(',')
         ip = provided_ips[0]
-        app.logger.info('ip:%s, parts: %s' % (ip, allowed_ips))
 
-        for aip in parts:
-            try:
-                ip_to_check = ipaddress.ip_network(unicode(aip))
-            except ValueError:
-                ip_to_check = ipaddress.ip_address(unicode(aip))
+        if ip in parts:
+            app.logger.info('OK - %s in list: %s' % (ip, allowed_ips))
+            return None
 
-            if ipaddress.ip_address(unicode(ip)) in ip_to_check:
-                return None
+    app.logger.info('Rejected ip: %s' % ip)
     abort(403)
 
