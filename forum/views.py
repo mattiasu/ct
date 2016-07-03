@@ -127,4 +127,3 @@ def limit_remote_addr():
 
     app.logger.info('Rejected ip: %s' % ip)
     abort(403)
-
