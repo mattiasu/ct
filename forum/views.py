@@ -109,26 +109,23 @@ def profile(username):
 @app.before_request
 def limit_remote_addr():
     try:
-        ips = environ['ALLOWED_IPS']
+        allowed_ips = environ['ALLOWED_IPS']
     except KeyError:
         return None
 
-    if 'HTTP_X_FORWARDED_FOR' in request.META:
-        ip_adds = request.META['HTTP_X_FORWARDED_FOR'].split(",")
-        ip = ip_adds[0]
+    ips = request.headers.getlist('HTTP_X_FORWARDED_FOR')
+    if not ips:
+        app.logger.info('No ip')
     else:
-        ip = request.META['REMOTE_ADDR']
-        app.logger.info(ip)
+        parts = allowed_ips.split(',')
 
-    parts = ips.split(",")
+        for aip in parts:
+            try:
+                ip_to_check = ipaddress.ip_network(unicode(aip))
+            except ValueError:
+                ip_to_check = ipaddress.ip_address(unicode(aip))
 
-    for aip in parts:
-        try:
-            ip_to_check = ipaddress.ip_network(unicode(aip))
-        except ValueError:
-            ip_to_check = ipaddress.ip_address(unicode(aip))
-
-        if ipaddress.ip_address(unicode(ip)) in ip_to_check:
-            return None
-    abort(403)
+            if ipaddress.ip_address(unicode(ip)) in ip_to_check:
+                return None
+        abort(403)
 
