@@ -120,7 +120,7 @@ def limit_remote_addr():
     else:
         parts = allowed_ips.split(',')
         ip = provided_ips[0]
-        app.logger.info('ip:%s, parts: %s' % (ip, allowed_ips)
+        app.logger.info('ip:%s, parts: %s' % (ip, allowed_ips))
 
         for aip in parts:
             try:
