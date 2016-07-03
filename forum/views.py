@@ -2,6 +2,7 @@ from .models import User, get_todays_recent_posts
 from flask import request, session, redirect, url_for, render_template, flash, abort
 from forum import app
 from os import environ
+import ipaddress
 
 @app.route('/')
 def index():
