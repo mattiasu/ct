@@ -6,6 +6,9 @@
   "env": {
     "HOST": {
       "required": true
+    },
+    "ALLOWED_IPS": {
+      "required": true
     }
   },
   "formation": {
