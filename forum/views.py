@@ -1,10 +1,11 @@
 from .models import User, get_todays_recent_posts
-from flask import Flask, request, session, redirect, url_for, render_template, flash
-
-app = Flask(__name__)
+from flask import request, session, redirect, url_for, render_template, flash, abort
+from forum import app
+from os import environ
 
 @app.route('/')
 def index():
+    app.logger.info('Index')
     posts = get_todays_recent_posts()
     return render_template('index.html', posts=posts)
 
@@ -104,3 +105,26 @@ def profile(username):
         similar=similar,
         common=common
     )
+
+@app.before_request
+def limit_remote_addr():
+    try:
+        allowed_ips = environ['ALLOWED_IPS']
+    except KeyError:
+        return None
+
+    provided_ips = request.access_route
+    if not provided_ips:
+        app.logger.info('No ip')
+        abort(500)
+    else:
+        parts = allowed_ips.split(',')
+        ip = provided_ips[0]
+
+        if ip in parts:
+            app.logger.info('OK - %s in list: %s' % (ip, allowed_ips))
+            return None
+
+    app.logger.info('Rejected ip: %s' % ip)
+    abort(403)
+
